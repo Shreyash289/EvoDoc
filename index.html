@@ -3,89 +3,168 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EvoDoc | Mini Hospital Management System</title>
+    <title>EvoDoc | Smart Care Workspace</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <aside class="sidebar">
-        <div class="brand">
+    <div class="ambient-layer">
+      <span class="orb orb-a"></span>
+      <span class="orb orb-b"></span>
+      <span class="orb orb-c"></span>
+      <span class="grid-glow"></span>
+      <span id="cursor-glow" class="cursor-glow"></span>
+    </div>
+
+    <section id="auth-shell" class="auth-shell">
+      <div class="auth-hero">
+        <div class="brand-lockup">
           <div class="brand-mark">E</div>
           <div>
-            <p class="eyebrow">Hospital Ops</p>
+            <p class="micro-copy">Clinical Workspace</p>
+            <h1>EvoDoc</h1>
+          </div>
+        </div>
+        <div class="hero-copy">
+          <p class="micro-copy">Modern Care Coordination</p>
+          <h2>Hospital workflows with a more cinematic interface.</h2>
+          <p class="hero-text">
+            Sign in to manage patient intake, live schedules, and doctor-side clinical records from a single visual workspace.
+          </p>
+        </div>
+        <div class="feature-ribbon">
+          <span>Role-aware</span>
+          <span>Realtime Supabase</span>
+          <span>Doctor notes</span>
+          <span>Reception workflow</span>
+        </div>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button id="signin-tab" class="auth-tab active" data-auth-mode="signin">Sign In</button>
+          <button id="signup-tab" class="auth-tab" data-auth-mode="signup">Create Account</button>
+        </div>
+
+        <form id="signin-form" class="auth-form active">
+          <label>
+            Email
+            <input id="signin-email" type="email" placeholder="doctor@evodoc.com" required />
+          </label>
+          <label>
+            Password
+            <input id="signin-password" type="password" placeholder="Enter password" required />
+          </label>
+          <button type="submit" class="primary-btn auth-submit">Access Workspace</button>
+        </form>
+
+        <form id="signup-form" class="auth-form">
+          <label>
+            Full Name
+            <input id="signup-name" type="text" placeholder="Your full name" required />
+          </label>
+          <label>
+            Email
+            <input id="signup-email" type="email" placeholder="name@hospital.com" required />
+          </label>
+          <label>
+            Password
+            <input id="signup-password" type="password" placeholder="Create password" required />
+          </label>
+          <label>
+            Primary Role
+            <select id="signup-role">
+              <option value="Receptionist / Nurse">Receptionist / Nurse</option>
+              <option value="Doctor">Doctor</option>
+            </select>
+          </label>
+          <button type="submit" class="primary-btn auth-submit">Create Account</button>
+        </form>
+
+        <p id="auth-hint" class="auth-hint">
+          Use Supabase Auth email/password. If confirmation emails are enabled in Supabase, confirm the account before signing in.
+        </p>
+      </div>
+    </section>
+
+    <div id="app-shell" class="app-shell hidden">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark">E</div>
+          <div>
+            <p class="micro-copy">Smart Care Workspace</p>
             <h1>EvoDoc</h1>
           </div>
         </div>
 
-        <div class="role-switcher">
-          <p class="section-label">Portals</p>
-          <button class="role-btn active" data-role-target="nurse-portal">
-            Receptionist / Nurse
-          </button>
-          <button class="role-btn" data-role-target="doctor-portal">Doctor</button>
+        <div class="topbar-center">
+          <button class="role-chip active" data-role-target="nurse-portal">Reception Desk</button>
+          <button class="role-chip" data-role-target="doctor-portal">Doctor Suite</button>
         </div>
 
-        <div class="sidebar-card">
-          <p class="section-label">System Flow</p>
-          <ol class="flow-list">
-            <li>Register patient details</li>
-            <li>Book and manage appointments</li>
-            <li>Doctor reviews appointments</li>
-            <li>Doctor updates clinical notes</li>
-          </ol>
-        </div>
-
-        <div class="sidebar-card">
-          <p class="section-label">Connection</p>
-          <p id="connection-status" class="connection waiting">Checking Supabase...</p>
-        </div>
-      </aside>
-
-      <main class="main-content">
-        <section class="hero">
-          <div>
-            <p class="eyebrow">Mini Hospital Management System</p>
-            <h2>Patient intake, appointment coordination, and doctor records in one interface.</h2>
+        <div class="topbar-user">
+          <div class="user-chip">
+            <span id="session-role" class="user-badge">Member</span>
+            <div>
+              <strong id="session-name">Authenticated User</strong>
+              <p id="session-email">user@example.com</p>
+            </div>
           </div>
-          <div class="hero-stats">
-            <div class="mini-stat">
+          <button id="signout-btn" class="secondary-btn">Sign Out</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <p class="micro-copy">Interactive Hospital Console</p>
+            <h2>Design-forward patient operations with real workflow depth.</h2>
+            <p class="hero-text">
+              Move between intake, appointment planning, and doctor review without leaving the screen. The interface responds to role, data, and activity.
+            </p>
+          </div>
+          <div class="hero-metrics">
+            <article class="metric-card accent-a">
               <span id="hero-patient-count">0</span>
-              <p>Patients</p>
-            </div>
-            <div class="mini-stat">
+              <p>Registered Patients</p>
+            </article>
+            <article class="metric-card accent-b">
               <span id="hero-appointment-count">0</span>
-              <p>Appointments</p>
-            </div>
+              <p>Live Appointments</p>
+            </article>
+            <article class="metric-card accent-c">
+              <span id="hero-doctor-count">0</span>
+              <p>Doctors On Grid</p>
+            </article>
           </div>
         </section>
 
         <section id="nurse-portal" class="portal active">
-          <div class="portal-header">
+          <div class="section-intro">
             <div>
-              <p class="eyebrow">Receptionist / Nurse Portal</p>
-              <h3>Patient intake and appointment operations</h3>
+              <p class="micro-copy">Reception Workflow</p>
+              <h3>Patient intake, queue shaping, and appointment control</h3>
             </div>
           </div>
 
-          <div class="grid two-col">
-            <article class="panel">
+          <div class="workspace-grid">
+            <article class="panel glass-panel">
               <div class="panel-heading">
                 <div>
-                  <p class="section-label">Patient Intake</p>
-                  <h4>Add or update patient information</h4>
+                  <p class="micro-copy">Patient Intake</p>
+                  <h4>Create and maintain patient identity records</h4>
                 </div>
               </div>
               <form id="patient-form" class="form-grid">
                 <input type="hidden" id="patient-id" />
                 <label>
                   Full Name
-                  <input id="full-name" type="text" placeholder="Enter patient full name" required />
+                  <input id="full-name" type="text" placeholder="Patient full name" required />
                 </label>
                 <label>
                   Date of Birth
@@ -124,34 +203,34 @@
                 </label>
                 <label class="full-span">
                   Allergies
-                  <textarea id="allergies" rows="2" placeholder="Example: Penicillin"></textarea>
+                  <textarea id="allergies" rows="2" placeholder="Known allergies"></textarea>
                 </label>
                 <label class="full-span">
                   Chronic Conditions
-                  <textarea id="chronic-conditions" rows="2" placeholder="Example: Asthma, diabetes"></textarea>
+                  <textarea id="chronic-conditions" rows="2" placeholder="Long-term conditions"></textarea>
                 </label>
                 <label class="full-span">
                   Current Medications
-                  <textarea id="current-medications" rows="2" placeholder="Example: Metformin"></textarea>
+                  <textarea id="current-medications" rows="2" placeholder="Current medications"></textarea>
                 </label>
                 <div class="form-actions full-span">
                   <button type="submit" class="primary-btn">Save Patient</button>
-                  <button type="button" id="patient-reset" class="secondary-btn">Clear</button>
+                  <button type="button" id="patient-reset" class="secondary-btn">Reset</button>
                 </div>
               </form>
             </article>
 
-            <article class="panel">
+            <article class="panel glass-panel">
               <div class="panel-heading">
                 <div>
-                  <p class="section-label">Appointment Registration</p>
-                  <h4>Search patient and book a doctor slot</h4>
+                  <p class="micro-copy">Appointment Studio</p>
+                  <h4>Search patients and place them into a doctor slot</h4>
                 </div>
               </div>
               <div class="search-block">
                 <label>
                   Search Patient
-                  <input id="patient-search" type="text" placeholder="Search by name or contact" />
+                  <input id="patient-search" type="text" placeholder="Name or contact number" />
                 </label>
                 <div id="patient-search-results" class="search-results"></div>
               </div>
@@ -160,7 +239,7 @@
                 <input type="hidden" id="appointment-patient-id" />
                 <label class="full-span">
                   Selected Patient
-                  <input id="selected-patient" type="text" placeholder="Select a patient from search results" readonly />
+                  <input id="selected-patient" type="text" placeholder="Choose a patient from search" readonly />
                 </label>
                 <label>
                   Doctor
@@ -199,37 +278,37 @@
                 </label>
                 <label class="full-span">
                   Notes
-                  <textarea id="appointment-notes" rows="3" placeholder="Add booking notes"></textarea>
+                  <textarea id="appointment-notes" rows="3" placeholder="Booking notes"></textarea>
                 </label>
                 <div class="form-actions full-span">
-                  <button type="submit" class="primary-btn">Book Appointment</button>
+                  <button type="submit" class="primary-btn">Confirm Appointment</button>
                   <button type="button" id="appointment-reset" class="secondary-btn">Reset</button>
                 </div>
               </form>
             </article>
           </div>
 
-          <article class="panel">
+          <article class="panel glass-panel">
             <div class="panel-heading split">
               <div>
-                <p class="section-label">Appointments List</p>
-                <h4>Track, filter, edit, and cancel appointments</h4>
+                <p class="micro-copy">Appointments Board</p>
+                <h4>Filter, review, edit, and cancel scheduled visits</h4>
               </div>
-              <button id="refresh-appointments" class="secondary-btn">Refresh</button>
+              <button id="refresh-appointments" class="secondary-btn">Refresh Data</button>
             </div>
             <div class="filter-row">
               <label>
-                Filter by Date
+                Date
                 <input id="filter-date" type="date" />
               </label>
               <label>
-                Filter by Doctor
+                Doctor
                 <select id="filter-doctor">
                   <option value="">All doctors</option>
                 </select>
               </label>
               <label>
-                Filter by Status
+                Status
                 <select id="filter-status">
                   <option value="">All statuses</option>
                   <option value="scheduled">Scheduled</option>
@@ -258,46 +337,46 @@
         </section>
 
         <section id="doctor-portal" class="portal">
-          <div class="portal-header">
+          <div class="section-intro">
             <div>
-              <p class="eyebrow">Doctor Portal</p>
-              <h3>Dashboard, appointments, and patient medical records</h3>
+              <p class="micro-copy">Doctor Suite</p>
+              <h3>Daily dashboard, patient charts, and clinical note flow</h3>
             </div>
             <label class="doctor-picker">
-              Doctor Profile
+              Active Doctor
               <select id="doctor-dashboard-select"></select>
             </label>
           </div>
 
           <div class="dashboard-grid">
-            <article class="stat-card">
-              <p class="section-label">Today</p>
+            <article class="stat-card glow-card">
+              <p class="micro-copy">Today</p>
               <h4 id="doctor-today-count">0 Appointments</h4>
-              <p id="doctor-profile-line">Select a doctor to view details.</p>
+              <p id="doctor-profile-line">Select a doctor profile.</p>
             </article>
-            <article class="stat-card">
-              <p class="section-label">This Week</p>
+            <article class="stat-card glow-card">
+              <p class="micro-copy">This Week</p>
               <h4 id="doctor-week-count">0 Appointments</h4>
-              <p>Weekly workload snapshot.</p>
+              <p>Workload cadence for the next seven days.</p>
             </article>
-            <article class="stat-card">
-              <p class="section-label">Recent Patients</p>
+            <article class="stat-card glow-card">
+              <p class="micro-copy">Recent Patients</p>
               <h4 id="doctor-recent-patients">0 Patients</h4>
-              <p>Patients seen recently by this doctor.</p>
+              <p>Unique patients seen recently.</p>
             </article>
-            <article class="stat-card">
-              <p class="section-label">Notifications</p>
+            <article class="stat-card glow-card">
+              <p class="micro-copy">Attention</p>
               <h4 id="doctor-notification">No pending alerts</h4>
-              <p>Conflicts or pending cases appear here.</p>
+              <p>Schedule friction and pending work.</p>
             </article>
           </div>
 
-          <div class="grid two-col doctor-layout">
-            <article class="panel">
+          <div class="doctor-grid">
+            <article class="panel glass-panel">
               <div class="panel-heading">
                 <div>
-                  <p class="section-label">Appointments View</p>
-                  <h4>Open any patient record from the appointment list</h4>
+                  <p class="micro-copy">Doctor Timeline</p>
+                  <h4>Filter appointments and open patient context</h4>
                 </div>
               </div>
               <div class="filter-row">
@@ -316,28 +395,28 @@
                 </label>
                 <label>
                   Search Patient
-                  <input id="doctor-filter-search" type="text" placeholder="Type patient name" />
+                  <input id="doctor-filter-search" type="text" placeholder="Patient name" />
                 </label>
               </div>
               <div id="doctor-appointments" class="card-stack"></div>
             </article>
 
-            <article class="panel patient-details-panel">
+            <article class="panel glass-panel patient-details-panel">
               <div class="panel-heading">
                 <div>
-                  <p class="section-label">Patient Details</p>
-                  <h4 id="patient-detail-title">Select an appointment to view the patient record</h4>
+                  <p class="micro-copy">Patient Chart</p>
+                  <h4 id="patient-detail-title">Open an appointment to load the chart</h4>
                 </div>
               </div>
               <div id="patient-detail-empty" class="empty-state">
-                Patient information, visit history, and notes will appear here.
+                Patient demographics, medical background, visit history, and clinical notes appear here.
               </div>
               <div id="patient-detail-content" class="hidden">
                 <div class="tabs">
-                  <button class="tab-btn active" data-tab-target="tab-basic">Basic Info</button>
-                  <button class="tab-btn" data-tab-target="tab-medical">Medical Info</button>
+                  <button class="tab-btn active" data-tab-target="tab-basic">Identity</button>
+                  <button class="tab-btn" data-tab-target="tab-medical">Medical</button>
                   <button class="tab-btn" data-tab-target="tab-history">History</button>
-                  <button class="tab-btn" data-tab-target="tab-notes">Clinical Notes</button>
+                  <button class="tab-btn" data-tab-target="tab-notes">Notes</button>
                 </div>
 
                 <div class="tab-content active" id="tab-basic">
@@ -354,7 +433,7 @@
                     <input type="hidden" id="note-patient-id" />
                     <label class="full-span">
                       Add Clinical Note
-                      <textarea id="clinical-note-text" rows="6" placeholder="Write clinical observations, prescription notes, or follow-up plan"></textarea>
+                      <textarea id="clinical-note-text" rows="6" placeholder="Assessment, prescription, follow-up plan"></textarea>
                     </label>
                     <div class="form-actions full-span">
                       <button type="submit" class="primary-btn">Save Note</button>

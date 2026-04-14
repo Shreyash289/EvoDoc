@@ -9,6 +9,7 @@ const state = {
   patients: [],
   doctors: [],
   appointments: [],
+  session: null,
   selectedDoctorId: "",
   selectedPatientForDoctor: null,
   selectedDoctorAppointment: null,
@@ -32,10 +33,21 @@ const timeSlots = [
 ];
 
 const dom = {
-  connectionStatus: document.getElementById("connection-status"),
+  authShell: document.getElementById("auth-shell"),
+  appShell: document.getElementById("app-shell"),
+  authTabs: [...document.querySelectorAll(".auth-tab")],
+  signInForm: document.getElementById("signin-form"),
+  signUpForm: document.getElementById("signup-form"),
+  authHint: document.getElementById("auth-hint"),
+  signOutBtn: document.getElementById("signout-btn"),
+  sessionName: document.getElementById("session-name"),
+  sessionEmail: document.getElementById("session-email"),
+  sessionRole: document.getElementById("session-role"),
+  cursorGlow: document.getElementById("cursor-glow"),
   heroPatientCount: document.getElementById("hero-patient-count"),
   heroAppointmentCount: document.getElementById("hero-appointment-count"),
-  roleButtons: [...document.querySelectorAll(".role-btn")],
+  heroDoctorCount: document.getElementById("hero-doctor-count"),
+  roleButtons: [...document.querySelectorAll(".role-chip")],
   portals: [...document.querySelectorAll(".portal")],
   patientForm: document.getElementById("patient-form"),
   patientReset: document.getElementById("patient-reset"),
@@ -80,11 +92,16 @@ document.addEventListener("DOMContentLoaded", init);
 async function init() {
   renderTimeSlots();
   bindEvents();
-  await pingSupabase();
-  await loadInitialData();
+  const { data } = await supabase.auth.getSession();
+  applySession(data.session);
+  supabase.auth.onAuthStateChange((_event, session) => applySession(session));
 }
 
 function bindEvents() {
+  dom.authTabs.forEach((button) => {
+    button.addEventListener("click", () => switchAuthMode(button.dataset.authMode));
+  });
+
   dom.roleButtons.forEach((button) => {
     button.addEventListener("click", () => switchRole(button.dataset.roleTarget));
   });
@@ -108,20 +125,10 @@ function bindEvents() {
   dom.doctorFilterStatus.addEventListener("input", renderDoctorAppointments);
   dom.doctorFilterSearch.addEventListener("input", renderDoctorAppointments);
   dom.noteForm.addEventListener("submit", handleNoteSubmit);
-}
-
-async function pingSupabase() {
-  const { error } = await supabase.from("doctors").select("doctor_id").limit(1);
-
-  if (error) {
-    dom.connectionStatus.textContent = "Supabase connection failed. Run the SQL setup first.";
-    dom.connectionStatus.className = "connection error";
-    showToast("Supabase connection failed. Paste the SQL into Supabase first.");
-    return;
-  }
-
-  dom.connectionStatus.textContent = "Supabase connected successfully.";
-  dom.connectionStatus.className = "connection ok";
+  dom.signInForm.addEventListener("submit", handleSignIn);
+  dom.signUpForm.addEventListener("submit", handleSignUp);
+  dom.signOutBtn.addEventListener("click", handleSignOut);
+  window.addEventListener("pointermove", handlePointerMove);
 }
 
 async function loadInitialData() {
@@ -130,6 +137,98 @@ async function loadInitialData() {
   populateDoctorSelects();
   renderAppointmentsTable();
   renderDoctorDashboard();
+}
+
+function switchAuthMode(mode) {
+  dom.authTabs.forEach((button) => button.classList.toggle("active", button.dataset.authMode === mode));
+  dom.signInForm.classList.toggle("active", mode === "signin");
+  dom.signUpForm.classList.toggle("active", mode === "signup");
+}
+
+function applySession(session) {
+  state.session = session;
+
+  if (!session) {
+    dom.authShell.classList.remove("hidden");
+    dom.appShell.classList.add("hidden");
+    dom.sessionName.textContent = "Authenticated User";
+    dom.sessionEmail.textContent = "user@example.com";
+    dom.sessionRole.textContent = "Member";
+    return;
+  }
+
+  const metadata = session.user.user_metadata ?? {};
+  dom.sessionName.textContent = metadata.full_name || session.user.email || "Authenticated User";
+  dom.sessionEmail.textContent = session.user.email || "";
+  dom.sessionRole.textContent = metadata.primary_role || "Member";
+  dom.authShell.classList.add("hidden");
+  dom.appShell.classList.remove("hidden");
+  loadInitialData();
+}
+
+async function handleSignIn(event) {
+  event.preventDefault();
+  const email = document.getElementById("signin-email").value.trim();
+  const password = document.getElementById("signin-password").value;
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+
+  dom.signInForm.reset();
+  showToast("Signed in successfully.");
+}
+
+async function handleSignUp(event) {
+  event.preventDefault();
+  const full_name = document.getElementById("signup-name").value.trim();
+  const email = document.getElementById("signup-email").value.trim();
+  const password = document.getElementById("signup-password").value;
+  const primary_role = document.getElementById("signup-role").value;
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name, primary_role },
+    },
+  });
+
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+
+  dom.signUpForm.reset();
+  switchAuthMode("signin");
+
+  if (!data.session) {
+    showToast("Account created. Check your email for the confirmation link before signing in.");
+    return;
+  }
+
+  showToast("Account created and signed in.");
+}
+
+async function handleSignOut() {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+
+  state.selectedDoctorId = "";
+  resetDoctorPatientPanel();
+  showToast("Signed out.");
+}
+
+function handlePointerMove(event) {
+  document.documentElement.style.setProperty("--cursor-x", `${event.clientX}px`);
+  document.documentElement.style.setProperty("--cursor-y", `${event.clientY}px`);
 }
 
 async function loadPatients() {
@@ -200,6 +299,7 @@ async function loadAppointments() {
 function updateHeroStats() {
   dom.heroPatientCount.textContent = String(state.patients.length);
   dom.heroAppointmentCount.textContent = String(state.appointments.length);
+  dom.heroDoctorCount.textContent = String(state.doctors.length);
 }
 
 function populateDoctorSelects() {

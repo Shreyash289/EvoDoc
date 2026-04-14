@@ -67,32 +67,36 @@ drop policy if exists "Public doctors access" on doctors;
 drop policy if exists "Public patients access" on patients;
 drop policy if exists "Public appointments access" on appointments;
 drop policy if exists "Public notes access" on clinical_notes;
+drop policy if exists "Authenticated doctors access" on doctors;
+drop policy if exists "Authenticated patients access" on patients;
+drop policy if exists "Authenticated appointments access" on appointments;
+drop policy if exists "Authenticated notes access" on clinical_notes;
 
-create policy "Public doctors access"
+create policy "Authenticated doctors access"
 on doctors
 for all
-to anon, authenticated
+to authenticated
 using (true)
 with check (true);
 
-create policy "Public patients access"
+create policy "Authenticated patients access"
 on patients
 for all
-to anon, authenticated
+to authenticated
 using (true)
 with check (true);
 
-create policy "Public appointments access"
+create policy "Authenticated appointments access"
 on appointments
 for all
-to anon, authenticated
+to authenticated
 using (true)
 with check (true);
 
-create policy "Public notes access"
+create policy "Authenticated notes access"
 on clinical_notes
 for all
-to anon, authenticated
+to authenticated
 using (true)
 with check (true);
 
