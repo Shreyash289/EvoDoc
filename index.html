@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EvoDoc | Mini Hospital Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">E</div>
+          <div>
+            <p class="eyebrow">Hospital Ops</p>
+            <h1>EvoDoc</h1>
+          </div>
+        </div>
+
+        <div class="role-switcher">
+          <p class="section-label">Portals</p>
+          <button class="role-btn active" data-role-target="nurse-portal">
+            Receptionist / Nurse
+          </button>
+          <button class="role-btn" data-role-target="doctor-portal">Doctor</button>
+        </div>
+
+        <div class="sidebar-card">
+          <p class="section-label">System Flow</p>
+          <ol class="flow-list">
+            <li>Register patient details</li>
+            <li>Book and manage appointments</li>
+            <li>Doctor reviews appointments</li>
+            <li>Doctor updates clinical notes</li>
+          </ol>
+        </div>
+
+        <div class="sidebar-card">
+          <p class="section-label">Connection</p>
+          <p id="connection-status" class="connection waiting">Checking Supabase...</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Mini Hospital Management System</p>
+            <h2>Patient intake, appointment coordination, and doctor records in one interface.</h2>
+          </div>
+          <div class="hero-stats">
+            <div class="mini-stat">
+              <span id="hero-patient-count">0</span>
+              <p>Patients</p>
+            </div>
+            <div class="mini-stat">
+              <span id="hero-appointment-count">0</span>
+              <p>Appointments</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="nurse-portal" class="portal active">
+          <div class="portal-header">
+            <div>
+              <p class="eyebrow">Receptionist / Nurse Portal</p>
+              <h3>Patient intake and appointment operations</h3>
+            </div>
+          </div>
+
+          <div class="grid two-col">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-label">Patient Intake</p>
+                  <h4>Add or update patient information</h4>
+                </div>
+              </div>
+              <form id="patient-form" class="form-grid">
+                <input type="hidden" id="patient-id" />
+                <label>
+                  Full Name
+                  <input id="full-name" type="text" placeholder="Enter patient full name" required />
+                </label>
+                <label>
+                  Date of Birth
+                  <input id="dob" type="date" required />
+                </label>
+                <label>
+                  Gender
+                  <select id="gender" required>
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+                <label>
+                  Contact Number
+                  <input id="contact-number" type="tel" maxlength="10" placeholder="10-digit number" required />
+                </label>
+                <label>
+                  Emergency Contact
+                  <input id="emergency-contact" type="tel" maxlength="10" placeholder="10-digit number" />
+                </label>
+                <label>
+                  Blood Group
+                  <select id="blood-group">
+                    <option value="">Select blood group</option>
+                    <option>A+</option>
+                    <option>A-</option>
+                    <option>B+</option>
+                    <option>B-</option>
+                    <option>AB+</option>
+                    <option>AB-</option>
+                    <option>O+</option>
+                    <option>O-</option>
+                  </select>
+                </label>
+                <label class="full-span">
+                  Allergies
+                  <textarea id="allergies" rows="2" placeholder="Example: Penicillin"></textarea>
+                </label>
+                <label class="full-span">
+                  Chronic Conditions
+                  <textarea id="chronic-conditions" rows="2" placeholder="Example: Asthma, diabetes"></textarea>
+                </label>
+                <label class="full-span">
+                  Current Medications
+                  <textarea id="current-medications" rows="2" placeholder="Example: Metformin"></textarea>
+                </label>
+                <div class="form-actions full-span">
+                  <button type="submit" class="primary-btn">Save Patient</button>
+                  <button type="button" id="patient-reset" class="secondary-btn">Clear</button>
+                </div>
+              </form>
+            </article>
+
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-label">Appointment Registration</p>
+                  <h4>Search patient and book a doctor slot</h4>
+                </div>
+              </div>
+              <div class="search-block">
+                <label>
+                  Search Patient
+                  <input id="patient-search" type="text" placeholder="Search by name or contact" />
+                </label>
+                <div id="patient-search-results" class="search-results"></div>
+              </div>
+              <form id="appointment-form" class="form-grid">
+                <input type="hidden" id="appointment-id" />
+                <input type="hidden" id="appointment-patient-id" />
+                <label class="full-span">
+                  Selected Patient
+                  <input id="selected-patient" type="text" placeholder="Select a patient from search results" readonly />
+                </label>
+                <label>
+                  Doctor
+                  <select id="doctor-select" required></select>
+                </label>
+                <label>
+                  Availability
+                  <input id="doctor-availability" type="text" readonly />
+                </label>
+                <label>
+                  Appointment Date
+                  <input id="appointment-date" type="date" required />
+                </label>
+                <label>
+                  Time Slot
+                  <select id="appointment-time" required>
+                    <option value="">Select time</option>
+                  </select>
+                </label>
+                <label>
+                  Type
+                  <select id="appointment-type" required>
+                    <option value="">Select type</option>
+                    <option value="Consultation">Consultation</option>
+                    <option value="Follow-up">Follow-up</option>
+                    <option value="Emergency">Emergency</option>
+                  </select>
+                </label>
+                <label>
+                  Status
+                  <select id="appointment-status" required>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </label>
+                <label class="full-span">
+                  Notes
+                  <textarea id="appointment-notes" rows="3" placeholder="Add booking notes"></textarea>
+                </label>
+                <div class="form-actions full-span">
+                  <button type="submit" class="primary-btn">Book Appointment</button>
+                  <button type="button" id="appointment-reset" class="secondary-btn">Reset</button>
+                </div>
+              </form>
+            </article>
+          </div>
+
+          <article class="panel">
+            <div class="panel-heading split">
+              <div>
+                <p class="section-label">Appointments List</p>
+                <h4>Track, filter, edit, and cancel appointments</h4>
+              </div>
+              <button id="refresh-appointments" class="secondary-btn">Refresh</button>
+            </div>
+            <div class="filter-row">
+              <label>
+                Filter by Date
+                <input id="filter-date" type="date" />
+              </label>
+              <label>
+                Filter by Doctor
+                <select id="filter-doctor">
+                  <option value="">All doctors</option>
+                </select>
+              </label>
+              <label>
+                Filter by Status
+                <select id="filter-status">
+                  <option value="">All statuses</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </label>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="appointments-table-body"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section id="doctor-portal" class="portal">
+          <div class="portal-header">
+            <div>
+              <p class="eyebrow">Doctor Portal</p>
+              <h3>Dashboard, appointments, and patient medical records</h3>
+            </div>
+            <label class="doctor-picker">
+              Doctor Profile
+              <select id="doctor-dashboard-select"></select>
+            </label>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="stat-card">
+              <p class="section-label">Today</p>
+              <h4 id="doctor-today-count">0 Appointments</h4>
+              <p id="doctor-profile-line">Select a doctor to view details.</p>
+            </article>
+            <article class="stat-card">
+              <p class="section-label">This Week</p>
+              <h4 id="doctor-week-count">0 Appointments</h4>
+              <p>Weekly workload snapshot.</p>
+            </article>
+            <article class="stat-card">
+              <p class="section-label">Recent Patients</p>
+              <h4 id="doctor-recent-patients">0 Patients</h4>
+              <p>Patients seen recently by this doctor.</p>
+            </article>
+            <article class="stat-card">
+              <p class="section-label">Notifications</p>
+              <h4 id="doctor-notification">No pending alerts</h4>
+              <p>Conflicts or pending cases appear here.</p>
+            </article>
+          </div>
+
+          <div class="grid two-col doctor-layout">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-label">Appointments View</p>
+                  <h4>Open any patient record from the appointment list</h4>
+                </div>
+              </div>
+              <div class="filter-row">
+                <label>
+                  Date
+                  <input id="doctor-filter-date" type="date" />
+                </label>
+                <label>
+                  Status
+                  <select id="doctor-filter-status">
+                    <option value="">All statuses</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </label>
+                <label>
+                  Search Patient
+                  <input id="doctor-filter-search" type="text" placeholder="Type patient name" />
+                </label>
+              </div>
+              <div id="doctor-appointments" class="card-stack"></div>
+            </article>
+
+            <article class="panel patient-details-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="section-label">Patient Details</p>
+                  <h4 id="patient-detail-title">Select an appointment to view the patient record</h4>
+                </div>
+              </div>
+              <div id="patient-detail-empty" class="empty-state">
+                Patient information, visit history, and notes will appear here.
+              </div>
+              <div id="patient-detail-content" class="hidden">
+                <div class="tabs">
+                  <button class="tab-btn active" data-tab-target="tab-basic">Basic Info</button>
+                  <button class="tab-btn" data-tab-target="tab-medical">Medical Info</button>
+                  <button class="tab-btn" data-tab-target="tab-history">History</button>
+                  <button class="tab-btn" data-tab-target="tab-notes">Clinical Notes</button>
+                </div>
+
+                <div class="tab-content active" id="tab-basic">
+                  <div id="patient-basic" class="detail-grid"></div>
+                </div>
+                <div class="tab-content" id="tab-medical">
+                  <div id="patient-medical" class="detail-grid"></div>
+                </div>
+                <div class="tab-content" id="tab-history">
+                  <div id="patient-history" class="history-list"></div>
+                </div>
+                <div class="tab-content" id="tab-notes">
+                  <form id="note-form" class="form-grid">
+                    <input type="hidden" id="note-patient-id" />
+                    <label class="full-span">
+                      Add Clinical Note
+                      <textarea id="clinical-note-text" rows="6" placeholder="Write clinical observations, prescription notes, or follow-up plan"></textarea>
+                    </label>
+                    <div class="form-actions full-span">
+                      <button type="submit" class="primary-btn">Save Note</button>
+                    </div>
+                  </form>
+                  <div id="patient-notes-list" class="history-list"></div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
