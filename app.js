@@ -43,7 +43,6 @@ const dom = {
   sessionName: document.getElementById("session-name"),
   sessionEmail: document.getElementById("session-email"),
   sessionRole: document.getElementById("session-role"),
-  cursorGlow: document.getElementById("cursor-glow"),
   heroPatientCount: document.getElementById("hero-patient-count"),
   heroAppointmentCount: document.getElementById("hero-appointment-count"),
   heroDoctorCount: document.getElementById("hero-doctor-count"),
@@ -132,7 +131,6 @@ function bindEvents() {
   dom.signInForm.addEventListener("submit", handleSignIn);
   dom.signUpForm.addEventListener("submit", handleSignUp);
   dom.signOutBtn.addEventListener("click", handleSignOut);
-  window.addEventListener("pointermove", handlePointerMove);
 }
 
 async function loadInitialData() {
@@ -228,11 +226,6 @@ async function handleSignOut() {
   state.selectedDoctorId = "";
   resetDoctorPatientPanel();
   showToast("Signed out.");
-}
-
-function handlePointerMove(event) {
-  document.documentElement.style.setProperty("--cursor-x", `${event.clientX}px`);
-  document.documentElement.style.setProperty("--cursor-y", `${event.clientY}px`);
 }
 
 async function loadPatients() {
