@@ -733,8 +733,15 @@ function renderDoctorAppointments() {
             </div>
             <span class="pill ${appointment.status}">${capitalize(appointment.status)}</span>
           </div>
-          <p><strong>Type:</strong> ${escapeHtml(appointment.type)}</p>
-          <small>${escapeHtml(appointment.notes || "No appointment note added.")}</small>
+          <div class="appointment-card-grid">
+            <span class="meta-chip">${escapeHtml(appointment.type)}</span>
+            <span class="meta-chip">${escapeHtml(appointment.doctors?.specialization ?? "General")}</span>
+            <span class="meta-chip">${escapeHtml(appointment.patients?.gender ?? "Profile pending")}</span>
+          </div>
+          <div class="appointment-card-footer">
+            <small>${escapeHtml(appointment.notes || "No appointment note added.")}</small>
+            <span class="card-arrow">Open chart</span>
+          </div>
         </button>
       `
     )
