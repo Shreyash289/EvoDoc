@@ -59,6 +59,7 @@ const dom = {
   doctorSelect: document.getElementById("doctor-select"),
   doctorAvailability: document.getElementById("doctor-availability"),
   filterDoctor: document.getElementById("filter-doctor"),
+  filterPatientSearch: document.getElementById("filter-patient-search"),
   filterDate: document.getElementById("filter-date"),
   filterStatus: document.getElementById("filter-status"),
   appointmentsTableBody: document.getElementById("appointments-table-body"),
@@ -81,6 +82,7 @@ const dom = {
   patientHistory: document.getElementById("patient-history"),
   patientNotesList: document.getElementById("patient-notes-list"),
   noteForm: document.getElementById("note-form"),
+  patientUpdateForm: document.getElementById("patient-update-form"),
   notePatientId: document.getElementById("note-patient-id"),
   toast: document.getElementById("toast"),
   tabs: [...document.querySelectorAll(".tab-btn")],
@@ -118,6 +120,7 @@ function bindEvents() {
   dom.patientSearch.addEventListener("input", handlePatientSearch);
   dom.doctorSelect.addEventListener("change", syncDoctorAvailability);
   dom.filterDoctor.addEventListener("change", renderAppointmentsTable);
+  dom.filterPatientSearch.addEventListener("input", renderAppointmentsTable);
   dom.filterDate.addEventListener("change", renderAppointmentsTable);
   dom.filterStatus.addEventListener("change", renderAppointmentsTable);
   dom.doctorDashboardSelect.addEventListener("change", handleDoctorSelection);
@@ -125,6 +128,7 @@ function bindEvents() {
   dom.doctorFilterStatus.addEventListener("input", renderDoctorAppointments);
   dom.doctorFilterSearch.addEventListener("input", renderDoctorAppointments);
   dom.noteForm.addEventListener("submit", handleNoteSubmit);
+  dom.patientUpdateForm.addEventListener("submit", handlePatientUpdateSubmit);
   dom.signInForm.addEventListener("submit", handleSignIn);
   dom.signUpForm.addEventListener("submit", handleSignUp);
   dom.signOutBtn.addEventListener("click", handleSignOut);
@@ -546,11 +550,14 @@ function resetAppointmentForm() {
 
 function renderAppointmentsTable() {
   const doctorId = dom.filterDoctor.value;
+  const patientSearch = dom.filterPatientSearch.value.trim().toLowerCase();
   const date = dom.filterDate.value;
   const status = dom.filterStatus.value;
 
   const filtered = state.appointments.filter((appointment) => {
+    const patientName = appointment.patients?.full_name?.toLowerCase() ?? "";
     return (
+      (!patientSearch || patientName.includes(patientSearch)) &&
       (!doctorId || String(appointment.doctor_id) === String(doctorId)) &&
       (!date || appointment.appointment_date === date) &&
       (!status || appointment.status === status)
@@ -753,6 +760,7 @@ async function openAppointmentInDoctorPanel(appointmentId) {
 
   renderPatientBasics(appointment.patients);
   renderPatientMedical(appointment.patients);
+  populatePatientUpdateForm(appointment.patients);
   renderPatientHistory(appointment.patient_id);
   await renderPatientNotes(appointment.patient_id);
   activateTab("tab-basic");
@@ -781,6 +789,61 @@ function renderPatientMedical(patient) {
   ];
 
   dom.patientMedical.innerHTML = medical.map(detailItemMarkup).join("");
+}
+
+function populatePatientUpdateForm(patient) {
+  document.getElementById("update-patient-id").value = patient?.patient_id ?? "";
+  document.getElementById("update-full-name").value = patient?.full_name ?? "";
+  document.getElementById("update-contact-number").value = patient?.contact_number ?? "";
+  document.getElementById("update-emergency-contact").value = patient?.emergency_contact ?? "";
+  document.getElementById("update-blood-group").value = patient?.blood_group ?? "";
+  document.getElementById("update-allergies").value = patient?.allergies ?? "";
+  document.getElementById("update-current-medications").value = patient?.current_medications ?? "";
+  document.getElementById("update-chronic-conditions").value = patient?.chronic_conditions ?? "";
+}
+
+async function handlePatientUpdateSubmit(event) {
+  event.preventDefault();
+
+  const patient_id = document.getElementById("update-patient-id").value;
+  const payload = {
+    full_name: document.getElementById("update-full-name").value.trim(),
+    contact_number: document.getElementById("update-contact-number").value.trim(),
+    emergency_contact: document.getElementById("update-emergency-contact").value.trim(),
+    blood_group: document.getElementById("update-blood-group").value,
+    allergies: document.getElementById("update-allergies").value.trim(),
+    current_medications: document.getElementById("update-current-medications").value.trim(),
+    chronic_conditions: document.getElementById("update-chronic-conditions").value.trim(),
+  };
+
+  if (!patient_id || !payload.full_name) {
+    showToast("Patient record is not loaded correctly.");
+    return;
+  }
+
+  if (!/^\d{10}$/.test(payload.contact_number)) {
+    showToast("Contact number must be a 10-digit value.");
+    return;
+  }
+
+  if (payload.emergency_contact && !/^\d{10}$/.test(payload.emergency_contact)) {
+    showToast("Emergency contact must be a 10-digit value.");
+    return;
+  }
+
+  const { error } = await supabase.from("patients").update(payload).eq("patient_id", patient_id);
+
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+
+  showToast("Patient record updated.");
+  await loadInitialData();
+
+  if (state.selectedDoctorAppointment) {
+    await openAppointmentInDoctorPanel(state.selectedDoctorAppointment.appointment_id);
+  }
 }
 
 function renderPatientHistory(patientId) {

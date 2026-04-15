@@ -123,10 +123,26 @@
         <section class="hero-panel">
           <div class="hero-copy">
             <p class="micro-copy">Interactive Hospital Console</p>
-            <h2>Design-forward patient operations with real workflow depth.</h2>
+            <h2>Elegant hospital workflow, shaped for speed.</h2>
             <p class="hero-text">
-              Move between intake, appointment planning, and doctor review without leaving the screen. The interface responds to role, data, and activity.
+              A sharper front-end for intake, scheduling, and clinical review. Built to feel polished, fast to scan, and easy to present in a design-focused interview.
             </p>
+            <div class="hero-tags">
+              <span>Patient intake</span>
+              <span>Appointment control</span>
+              <span>Doctor dashboard</span>
+            </div>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="visual-ring ring-one"></div>
+            <div class="visual-ring ring-two"></div>
+            <div class="visual-ring ring-three"></div>
+            <div class="visual-core">
+              <span class="core-line"></span>
+              <span class="core-line"></span>
+              <span class="core-line"></span>
+              <span class="core-dot"></span>
+            </div>
           </div>
           <div class="hero-metrics">
             <article class="metric-card accent-a">
@@ -298,6 +314,10 @@
             </div>
             <div class="filter-row">
               <label>
+                Patient
+                <input id="filter-patient-search" type="text" placeholder="Search patient name" />
+              </label>
+              <label>
                 Date
                 <input id="filter-date" type="date" />
               </label>
@@ -421,6 +441,50 @@
 
                 <div class="tab-content active" id="tab-basic">
                   <div id="patient-basic" class="detail-grid"></div>
+                  <form id="patient-update-form" class="form-grid patient-update-form">
+                    <input type="hidden" id="update-patient-id" />
+                    <label>
+                      Full Name
+                      <input id="update-full-name" type="text" placeholder="Patient full name" />
+                    </label>
+                    <label>
+                      Contact Number
+                      <input id="update-contact-number" type="tel" maxlength="10" placeholder="10-digit number" />
+                    </label>
+                    <label>
+                      Emergency Contact
+                      <input id="update-emergency-contact" type="tel" maxlength="10" placeholder="10-digit number" />
+                    </label>
+                    <label>
+                      Blood Group
+                      <select id="update-blood-group">
+                        <option value="">Select blood group</option>
+                        <option>A+</option>
+                        <option>A-</option>
+                        <option>B+</option>
+                        <option>B-</option>
+                        <option>AB+</option>
+                        <option>AB-</option>
+                        <option>O+</option>
+                        <option>O-</option>
+                      </select>
+                    </label>
+                    <label class="full-span">
+                      Allergies
+                      <textarea id="update-allergies" rows="2" placeholder="Known allergies"></textarea>
+                    </label>
+                    <label class="full-span">
+                      Current Medications
+                      <textarea id="update-current-medications" rows="2" placeholder="Current medications"></textarea>
+                    </label>
+                    <label class="full-span">
+                      Chronic Conditions
+                      <textarea id="update-chronic-conditions" rows="2" placeholder="Long-term conditions"></textarea>
+                    </label>
+                    <div class="form-actions full-span">
+                      <button type="submit" class="primary-btn">Update Patient Record</button>
+                    </div>
+                  </form>
                 </div>
                 <div class="tab-content" id="tab-medical">
                   <div id="patient-medical" class="detail-grid"></div>
