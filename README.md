@@ -1,34 +1,51 @@
-# EvoDoc
+🏥 EvoDoc
 
-EvoDoc is a lightweight hospital management web app with two role-based portals:
+EvoDoc is a lightweight, role-based hospital management web app with portals for Receptionists/Nurses and Doctors, built using a static frontend and Supabase backend.
 
-- Receptionist / Nurse
-- Doctor
+ Run Locally
+Clone or download the project
+Open your Supabase project
 
-It uses Supabase for data storage and runs as a static frontend without a build step.
+Go to SQL Editor and run:
 
-## Files
+supabase-schema.sql
 
-- `index.html` - application shell and UI
-- `styles.css` - layout, components, and responsive design
-- `app.js` - Supabase integration and client logic
-- `supabase-schema.sql` - paste this into the Supabase SQL Editor
+Open the project folder and launch:
 
-## Run Locally
+index.html
 
-Open `index.html` in a browser, or serve the folder with any static server.
+in your browser
 
-## Supabase Setup
+(Optional) Run with a static server:
 
-1. Open your Supabase project SQL Editor.
-2. Paste the contents of `supabase-schema.sql`.
-3. Run the SQL.
-4. Open the app and use the built-in Supabase URL and publishable key already configured in `app.js`.
+npx serve
+ Configuration
 
-## Main Features
+Supabase URL and anon key are already configured in:
 
-- Patient intake with validation
-- Appointment booking and management
-- Doctor dashboard with daily and weekly counts
-- Patient history and clinical note management
-- Appointment filtering and cancellation
+app.js
+No build step or installation required
+ Key Decisions & Trade-offs
+
+1. No Build Tools (Pure HTML/CSS/JS)
+
+ Faster setup, zero configuration
+ Limited scalability for larger applications
+
+2. Supabase as Backend (BaaS)
+
+ Quick integration, handles database & APIs
+ Less control compared to custom backend
+
+3. Static Frontend Architecture
+
+ Simple deployment and lightweight performance
+ No advanced state management or routing
+
+4. Focus on Core Features Only
+
+ Clean UX and fast implementation
+ Missing features like authentication and notifications
+ Summary
+
+EvoDoc prioritizes simplicity, speed, and usability, making it ideal for demos, small-scale deployments, and rapid prototyping of healthcare workflows.
