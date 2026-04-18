@@ -87,8 +87,9 @@
           <label>
             Primary Role
             <select id="signup-role">
-              <option value="Receptionist / Nurse">Receptionist / Nurse</option>
+              <option value="Nurse / Receptionist">Nurse / Receptionist</option>
               <option value="Doctor">Doctor</option>
+              <option value="Admin">Admin</option>
             </select>
           </label>
           <button type="submit" class="primary-btn auth-submit">Create Account</button>
@@ -124,6 +125,7 @@
         <div class="topbar-center">
           <button class="role-chip active" data-role-target="nurse-portal">Reception Desk</button>
           <button class="role-chip" data-role-target="doctor-portal">Doctor Suite</button>
+          <button class="role-chip" data-role-target="admin-portal">Admin Portal</button>
         </div>
 
         <div class="topbar-user">
@@ -525,6 +527,59 @@
                   <div id="patient-notes-list" class="history-list"></div>
                 </div>
               </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="admin-portal" class="portal">
+          <div class="section-intro">
+            <div>
+              <p class="micro-copy">Admin Portal</p>
+              <h3>Manage doctor access, directory details, and active grid coverage</h3>
+            </div>
+          </div>
+
+          <div class="workspace-grid">
+            <article class="panel glass-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="micro-copy">Doctor Directory</p>
+                  <h4>Add doctors to the grid</h4>
+                </div>
+              </div>
+              <form id="admin-doctor-form" class="form-grid" novalidate>
+                <input type="hidden" id="admin-doctor-id" />
+                <label>
+                  Doctor Name
+                  <input id="admin-doctor-name" type="text" placeholder="Doctor full name" />
+                </label>
+                <label>
+                  Specialization
+                  <input id="admin-doctor-specialization" type="text" placeholder="Cardiology, Dermatology, etc." />
+                </label>
+                <label>
+                  Availability
+                  <select id="admin-doctor-availability">
+                    <option value="Available">Available</option>
+                    <option value="Busy">Busy</option>
+                    <option value="On Leave">On Leave</option>
+                  </select>
+                </label>
+                <div class="form-actions full-span">
+                  <button type="submit" class="primary-btn">Add Doctor</button>
+                  <button type="button" id="admin-doctor-reset" class="secondary-btn">Reset</button>
+                </div>
+              </form>
+            </article>
+
+            <article class="panel glass-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="micro-copy">Doctor Grid</p>
+                  <h4>Review active doctors and remove old entries</h4>
+                </div>
+              </div>
+              <div id="admin-doctors-list" class="history-list"></div>
             </article>
           </div>
         </section>

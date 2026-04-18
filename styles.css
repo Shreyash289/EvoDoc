@@ -2126,6 +2126,17 @@ button {
   border-color: var(--accent);
 }
 
+.role-chip:disabled,
+.auth-tab:disabled,
+.tab-btn:disabled,
+.primary-btn:disabled,
+.secondary-btn:disabled,
+.action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
 .doctor-picker {
   min-width: 220px;
 }
@@ -2164,6 +2175,13 @@ button {
 }
 
 .search-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.doctor-admin-item {
   display: flex;
   align-items: center;
   justify-content: space-between;

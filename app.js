@@ -10,6 +10,8 @@ const state = {
   doctors: [],
   appointments: [],
   session: null,
+  currentRole: "member",
+  allowedPortals: [],
   selectedDoctorId: "",
   selectedPatientForDoctor: null,
   selectedDoctorAppointment: null,
@@ -85,6 +87,9 @@ const dom = {
   noteForm: document.getElementById("note-form"),
   patientUpdateForm: document.getElementById("patient-update-form"),
   notePatientId: document.getElementById("note-patient-id"),
+  adminDoctorForm: document.getElementById("admin-doctor-form"),
+  adminDoctorReset: document.getElementById("admin-doctor-reset"),
+  adminDoctorsList: document.getElementById("admin-doctors-list"),
   toast: document.getElementById("toast"),
   tabs: [...document.querySelectorAll(".tab-btn")],
   tabContents: [...document.querySelectorAll(".tab-content")],
@@ -133,6 +138,8 @@ function bindEvents() {
   dom.doctorFilterSearch.addEventListener("input", renderDoctorAppointments);
   dom.noteForm.addEventListener("submit", handleNoteSubmit);
   dom.patientUpdateForm.addEventListener("submit", handlePatientUpdateSubmit);
+  dom.adminDoctorForm.addEventListener("submit", handleAdminDoctorSubmit);
+  dom.adminDoctorReset.addEventListener("click", resetAdminDoctorForm);
   dom.signInForm.addEventListener("submit", handleSignIn);
   dom.signUpForm.addEventListener("submit", handleSignUp);
   dom.signOutBtn.addEventListener("click", handleSignOut);
@@ -144,6 +151,7 @@ async function loadInitialData() {
   populateDoctorSelects();
   renderAppointmentsTable();
   renderDoctorDashboard();
+  renderAdminDoctors();
 }
 
 function switchAuthMode(mode) {
@@ -178,15 +186,19 @@ function applySession(session) {
     dom.sessionName.textContent = "Authenticated User";
     dom.sessionEmail.textContent = "user@example.com";
     dom.sessionRole.textContent = "Member";
+    state.currentRole = "member";
+    state.allowedPortals = [];
     return;
   }
 
   const metadata = session.user.user_metadata ?? {};
+  const role = normalizeRole(metadata.primary_role);
   dom.sessionName.textContent = metadata.full_name || session.user.email || "Authenticated User";
   dom.sessionEmail.textContent = session.user.email || "";
-  dom.sessionRole.textContent = metadata.primary_role || "Member";
+  dom.sessionRole.textContent = formatRoleLabel(role);
   dom.authShell.classList.add("hidden");
   dom.appShell.classList.remove("hidden");
+  applyPortalAccess(role);
   loadInitialData();
 }
 
@@ -246,7 +258,10 @@ async function handleSignOut() {
   }
 
   state.selectedDoctorId = "";
+  state.currentRole = "member";
+  state.allowedPortals = [];
   resetDoctorPatientPanel();
+  resetAdminDoctorForm();
   showToast("Signed out.");
 }
 
@@ -349,6 +364,11 @@ function renderTimeSlots() {
 }
 
 function switchRole(targetId) {
+  if (!canAccessPortal(targetId)) {
+    showToast("You do not have access to that portal.");
+    return;
+  }
+
   dom.roleButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.roleTarget === targetId);
   });
@@ -356,6 +376,101 @@ function switchRole(targetId) {
   dom.portals.forEach((portal) => {
     portal.classList.toggle("active", portal.id === targetId);
   });
+}
+
+function normalizeRole(role) {
+  const value = String(role ?? "").trim().toLowerCase();
+
+  if (value === "admin" || value === "admin portal") {
+    return "admin";
+  }
+
+  if (value === "doctor" || value === "doctor portal") {
+    return "doctor";
+  }
+
+  if (
+    value === "nurse / receptionist" ||
+    value === "receptionist / nurse" ||
+    value === "nurse" ||
+    value === "receptionist" ||
+    value === "nurse and receptionist portal"
+  ) {
+    return "nurse";
+  }
+
+  return "member";
+}
+
+function formatRoleLabel(role) {
+  if (role === "admin") {
+    return "Admin";
+  }
+
+  if (role === "doctor") {
+    return "Doctor";
+  }
+
+  if (role === "nurse") {
+    return "Nurse / Receptionist";
+  }
+
+  return "Member";
+}
+
+function getAllowedPortals(role) {
+  if (role === "admin") {
+    return ["nurse-portal", "doctor-portal", "admin-portal"];
+  }
+
+  if (role === "doctor") {
+    return ["doctor-portal"];
+  }
+
+  if (role === "nurse") {
+    return ["nurse-portal"];
+  }
+
+  return [];
+}
+
+function getDefaultPortal(role) {
+  if (role === "admin") {
+    return "admin-portal";
+  }
+
+  if (role === "doctor") {
+    return "doctor-portal";
+  }
+
+  return "nurse-portal";
+}
+
+function applyPortalAccess(role) {
+  state.currentRole = role;
+  state.allowedPortals = getAllowedPortals(role);
+
+  dom.roleButtons.forEach((button) => {
+    const isAllowed = state.allowedPortals.includes(button.dataset.roleTarget);
+    button.classList.toggle("hidden", !isAllowed);
+    button.disabled = !isAllowed;
+  });
+
+  dom.portals.forEach((portal) => {
+    if (!state.allowedPortals.includes(portal.id)) {
+      portal.classList.remove("active");
+    }
+  });
+
+  if (!state.allowedPortals.length) {
+    return;
+  }
+
+  switchRole(getDefaultPortal(role));
+}
+
+function canAccessPortal(portalId) {
+  return state.allowedPortals.includes(portalId);
 }
 
 function activateTab(targetId) {
@@ -602,7 +717,11 @@ function renderAppointmentsTable() {
           <td><span class="pill ${appointment.status}">${capitalize(appointment.status)}</span></td>
           <td>
             <div class="table-actions">
-              <button class="action-btn" data-view-appointment="${appointment.appointment_id}">View</button>
+              ${
+                canAccessPortal("doctor-portal")
+                  ? `<button class="action-btn" data-view-appointment="${appointment.appointment_id}">View</button>`
+                  : ""
+              }
               <button class="action-btn" data-edit-appointment="${appointment.appointment_id}">Edit</button>
               <button class="action-btn danger" data-cancel-appointment="${appointment.appointment_id}">Cancel</button>
             </div>
@@ -612,9 +731,11 @@ function renderAppointmentsTable() {
     )
     .join("");
 
-  [...dom.appointmentsTableBody.querySelectorAll("[data-view-appointment]")].forEach((button) => {
-    button.addEventListener("click", () => openAppointmentInDoctorPanel(button.dataset.viewAppointment));
-  });
+  if (canAccessPortal("doctor-portal")) {
+    [...dom.appointmentsTableBody.querySelectorAll("[data-view-appointment]")].forEach((button) => {
+      button.addEventListener("click", () => openAppointmentInDoctorPanel(button.dataset.viewAppointment));
+    });
+  }
 
   [...dom.appointmentsTableBody.querySelectorAll("[data-edit-appointment]")].forEach((button) => {
     button.addEventListener("click", () => populateAppointmentForm(button.dataset.editAppointment));
@@ -768,6 +889,11 @@ function renderDoctorAppointments() {
 }
 
 async function openAppointmentInDoctorPanel(appointmentId) {
+  if (!canAccessPortal("doctor-portal")) {
+    showToast("Doctor portal access is required to open the patient chart.");
+    return;
+  }
+
   const appointment = state.appointments.find((entry) => String(entry.appointment_id) === String(appointmentId));
   if (!appointment) {
     return;
@@ -970,6 +1096,93 @@ function resetDoctorPatientPanel() {
   dom.patientDetailContent.classList.add("hidden");
   dom.notePatientId.value = "";
   document.getElementById("clinical-note-text").value = "";
+}
+
+async function handleAdminDoctorSubmit(event) {
+  event.preventDefault();
+
+  if (!canAccessPortal("admin-portal")) {
+    showToast("Admin access is required to manage doctors.");
+    return;
+  }
+
+  const payload = {
+    name: document.getElementById("admin-doctor-name").value.trim(),
+    specialization: document.getElementById("admin-doctor-specialization").value.trim(),
+    availability_status: document.getElementById("admin-doctor-availability").value,
+  };
+
+  if (!payload.name || !payload.specialization) {
+    showToast("Doctor name and specialization are required.");
+    return;
+  }
+
+  const { error } = await supabase.from("doctors").insert(payload);
+
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+
+  resetAdminDoctorForm();
+  showToast("Doctor added to the grid.");
+  await loadInitialData();
+}
+
+function resetAdminDoctorForm() {
+  dom.adminDoctorForm.reset();
+  document.getElementById("admin-doctor-id").value = "";
+  document.getElementById("admin-doctor-availability").value = "Available";
+}
+
+function renderAdminDoctors() {
+  if (!canAccessPortal("admin-portal")) {
+    dom.adminDoctorsList.innerHTML = `<div class="empty-state">Admin access is required to manage doctors.</div>`;
+    return;
+  }
+
+  if (!state.doctors.length) {
+    dom.adminDoctorsList.innerHTML = `<div class="empty-state">No doctors added yet.</div>`;
+    return;
+  }
+
+  dom.adminDoctorsList.innerHTML = state.doctors
+    .map(
+      (doctor) => `
+        <div class="history-item doctor-admin-item">
+          <div>
+            <p><strong>${escapeHtml(doctor.name)}</strong></p>
+            <small>${escapeHtml(doctor.specialization)} | ${escapeHtml(doctor.availability_status)}</small>
+          </div>
+          <div class="table-actions">
+            <button class="action-btn danger" data-delete-doctor="${doctor.doctor_id}">Delete</button>
+          </div>
+        </div>
+      `
+    )
+    .join("");
+
+  [...dom.adminDoctorsList.querySelectorAll("[data-delete-doctor]")].forEach((button) => {
+    button.addEventListener("click", () => deleteDoctor(button.dataset.deleteDoctor));
+  });
+}
+
+async function deleteDoctor(doctorId) {
+  if (!canAccessPortal("admin-portal")) {
+    showToast("Admin access is required to manage doctors.");
+    return;
+  }
+
+  const doctor = state.doctors.find((entry) => String(entry.doctor_id) === String(doctorId));
+  const { error } = await supabase.from("doctors").delete().eq("doctor_id", doctorId);
+
+  if (error) {
+    showToast(error.message.includes("violates foreign key") ? "This doctor still has linked records and cannot be deleted yet." : error.message);
+    return;
+  }
+
+  showToast(`${doctor?.name ?? "Doctor"} removed from the grid.`);
+  await loadInitialData();
 }
 
 function detailItemMarkup([label, value]) {
