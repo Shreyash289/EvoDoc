@@ -1506,13 +1506,19 @@ textarea:focus {
 
 label,
 .hero-text,
-.auth-hint,
+.auth-note,
 .topbar-user p,
 .metric-card p,
 .stat-card p,
 .appointment-card p,
 .history-item p {
   color: var(--text-muted);
+}
+
+.auth-note {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .hidden {

@@ -42,7 +42,6 @@ const dom = {
   authTabs: [...document.querySelectorAll(".auth-tab")],
   signInForm: document.getElementById("signin-form"),
   signUpForm: document.getElementById("signup-form"),
-  authHint: document.getElementById("auth-hint"),
   signOutBtn: document.getElementById("signout-btn"),
   sessionName: document.getElementById("session-name"),
   sessionEmail: document.getElementById("session-email"),
@@ -251,7 +250,7 @@ async function handleSignUp(event) {
   switchAuthMode("signin");
 
   if (!data.session) {
-    showToast("Account created. Check your email for the confirmation link before signing in.");
+    showToast("Account created. Email verification is controlled in Supabase settings before sign-in can be allowed.");
     return;
   }
 
