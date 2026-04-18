@@ -33,6 +33,8 @@ const timeSlots = [
 ];
 
 const dom = {
+  themeToggle: document.getElementById("theme-toggle"),
+  themeToggleLabel: document.getElementById("theme-toggle-label"),
   authShell: document.getElementById("auth-shell"),
   appShell: document.getElementById("app-shell"),
   authTabs: [...document.querySelectorAll(".auth-tab")],
@@ -91,6 +93,7 @@ const dom = {
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
+  initTheme();
   renderTimeSlots();
   bindEvents();
   const { data } = await supabase.auth.getSession();
@@ -99,6 +102,8 @@ async function init() {
 }
 
 function bindEvents() {
+  dom.themeToggle.addEventListener("click", toggleTheme);
+
   dom.authTabs.forEach((button) => {
     button.addEventListener("click", () => switchAuthMode(button.dataset.authMode));
   });
@@ -145,6 +150,23 @@ function switchAuthMode(mode) {
   dom.authTabs.forEach((button) => button.classList.toggle("active", button.dataset.authMode === mode));
   dom.signInForm.classList.toggle("active", mode === "signin");
   dom.signUpForm.classList.toggle("active", mode === "signup");
+}
+
+function initTheme() {
+  const savedTheme = window.localStorage.getItem("evodoc-theme");
+  applyTheme(savedTheme === "light" ? "light" : "dark");
+}
+
+function toggleTheme() {
+  const nextTheme = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  applyTheme(nextTheme);
+  window.localStorage.setItem("evodoc-theme", nextTheme);
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  dom.themeToggleLabel.textContent =
+    theme === "light" ? "Switch to dark mode" : "Switch to light mode";
 }
 
 function applySession(session) {
