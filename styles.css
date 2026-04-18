@@ -572,68 +572,14 @@ th {
 
 body {
   font-family: "Sora", sans-serif;
-  background: #07111f;
+  background:
+    linear-gradient(180deg, #091321 0%, #0d1828 52%, #101d30 100%);
   color: #f5f7fb;
   overflow-x: hidden;
 }
 
 .ambient-layer {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.orb,
-.grid-glow,
-.cursor-glow {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(24px);
-}
-
-.orb {
-  animation: drift 18s ease-in-out infinite;
-  opacity: 0.65;
-}
-
-.orb-a {
-  width: 34rem;
-  height: 34rem;
-  top: -8rem;
-  left: -6rem;
-  background: radial-gradient(circle, rgba(84, 180, 255, 0.44), transparent 68%);
-}
-
-.orb-b {
-  width: 38rem;
-  height: 38rem;
-  right: -10rem;
-  top: 12rem;
-  background: radial-gradient(circle, rgba(140, 92, 255, 0.32), transparent 70%);
-  animation-duration: 26s;
-}
-
-.orb-c {
-  width: 24rem;
-  height: 24rem;
-  left: 32%;
-  bottom: -7rem;
-  background: radial-gradient(circle, rgba(28, 206, 167, 0.28), transparent 66%);
-  animation-duration: 22s;
-}
-
-.grid-glow {
-  inset: 0;
-  border-radius: 0;
-  filter: none;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(circle at center, black 35%, transparent 85%);
-  opacity: 0.25;
+  display: none;
 }
 
 .auth-shell,

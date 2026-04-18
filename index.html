@@ -13,12 +13,6 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="ambient-layer">
-      <span class="orb orb-a"></span>
-      <span class="orb orb-b"></span>
-      <span class="orb orb-c"></span>
-      <span class="grid-glow"></span>
-    </div>
 
     <section id="auth-shell" class="auth-shell">
       <div class="auth-hero">
@@ -197,7 +191,7 @@
                   <h4>Create and maintain patient identity records</h4>
                 </div>
               </div>
-              <form id="patient-form" class="form-grid">
+              <form id="patient-form" class="form-grid" novalidate>
                 <input type="hidden" id="patient-id" />
                 <label>
                   Full Name
@@ -271,7 +265,7 @@
                 </label>
                 <div id="patient-search-results" class="search-results"></div>
               </div>
-              <form id="appointment-form" class="form-grid">
+              <form id="appointment-form" class="form-grid" novalidate>
                 <input type="hidden" id="appointment-id" />
                 <input type="hidden" id="appointment-patient-id" />
                 <label class="full-span">
