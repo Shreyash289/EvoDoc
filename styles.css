@@ -2011,6 +2011,10 @@ table {
   background: var(--surface);
 }
 
+#appointment-preview-card {
+  margin-top: 14px;
+}
+
 .panel,
 .stat-card {
   background: transparent;

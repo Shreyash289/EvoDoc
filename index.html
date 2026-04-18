@@ -374,6 +374,18 @@
                 <tbody id="appointments-table-body"></tbody>
               </table>
             </div>
+            <div id="appointment-preview-empty" class="empty-state">
+              Select View on any appointment to review the booking details here.
+            </div>
+            <div id="appointment-preview-card" class="glass-panel hidden">
+              <div class="panel-heading">
+                <div>
+                  <p class="micro-copy">Appointment Preview</p>
+                  <h4 id="appointment-preview-title">Appointment details</h4>
+                </div>
+              </div>
+              <div id="appointment-preview-grid" class="detail-grid"></div>
+            </div>
           </article>
         </section>
 
@@ -412,8 +424,22 @@
             </article>
           </div>
 
+          <article id="doctor-overview-panel" class="panel glass-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="micro-copy">Quick Links</p>
+                <h4>Jump to the doctor sections</h4>
+              </div>
+            </div>
+            <div class="table-actions">
+              <button type="button" class="secondary-btn doctor-jump-btn" data-jump-target="doctor-overview-panel">Overview</button>
+              <button type="button" class="secondary-btn doctor-jump-btn" data-jump-target="doctor-timeline-panel">Appointments</button>
+              <button type="button" class="secondary-btn doctor-jump-btn" data-jump-target="patient-chart-panel">Patient Chart</button>
+            </div>
+          </article>
+
           <div class="doctor-grid">
-            <article class="panel glass-panel">
+            <article id="doctor-timeline-panel" class="panel glass-panel">
               <div class="panel-heading">
                 <div>
                   <p class="micro-copy">Doctor Timeline</p>
@@ -442,7 +468,7 @@
               <div id="doctor-appointments" class="card-stack"></div>
             </article>
 
-            <article class="panel glass-panel patient-details-panel">
+            <article id="patient-chart-panel" class="panel glass-panel patient-details-panel">
               <div class="panel-heading">
                 <div>
                   <p class="micro-copy">Patient Chart</p>

@@ -66,6 +66,10 @@ const dom = {
   filterDate: document.getElementById("filter-date"),
   filterStatus: document.getElementById("filter-status"),
   appointmentsTableBody: document.getElementById("appointments-table-body"),
+  appointmentPreviewEmpty: document.getElementById("appointment-preview-empty"),
+  appointmentPreviewCard: document.getElementById("appointment-preview-card"),
+  appointmentPreviewTitle: document.getElementById("appointment-preview-title"),
+  appointmentPreviewGrid: document.getElementById("appointment-preview-grid"),
   appointmentTime: document.getElementById("appointment-time"),
   doctorDashboardSelect: document.getElementById("doctor-dashboard-select"),
   doctorTodayCount: document.getElementById("doctor-today-count"),
@@ -90,6 +94,7 @@ const dom = {
   adminDoctorForm: document.getElementById("admin-doctor-form"),
   adminDoctorReset: document.getElementById("admin-doctor-reset"),
   adminDoctorsList: document.getElementById("admin-doctors-list"),
+  doctorJumpButtons: [...document.querySelectorAll(".doctor-jump-btn")],
   toast: document.getElementById("toast"),
   tabs: [...document.querySelectorAll(".tab-btn")],
   tabContents: [...document.querySelectorAll(".tab-content")],
@@ -143,6 +148,9 @@ function bindEvents() {
   dom.signInForm.addEventListener("submit", handleSignIn);
   dom.signUpForm.addEventListener("submit", handleSignUp);
   dom.signOutBtn.addEventListener("click", handleSignOut);
+  dom.doctorJumpButtons.forEach((button) => {
+    button.addEventListener("click", () => jumpToDoctorSection(button.dataset.jumpTarget));
+  });
 }
 
 async function loadInitialData() {
@@ -188,6 +196,7 @@ function applySession(session) {
     dom.sessionRole.textContent = "Member";
     state.currentRole = "member";
     state.allowedPortals = [];
+    resetAppointmentPreview();
     return;
   }
 
@@ -261,6 +270,7 @@ async function handleSignOut() {
   state.currentRole = "member";
   state.allowedPortals = [];
   resetDoctorPatientPanel();
+  resetAppointmentPreview();
   resetAdminDoctorForm();
   showToast("Signed out.");
 }
@@ -695,6 +705,7 @@ function renderAppointmentsTable() {
   });
 
   if (!filtered.length) {
+    resetAppointmentPreview();
     dom.appointmentsTableBody.innerHTML = `
       <tr>
         <td colspan="7">
@@ -717,11 +728,7 @@ function renderAppointmentsTable() {
           <td><span class="pill ${appointment.status}">${capitalize(appointment.status)}</span></td>
           <td>
             <div class="table-actions">
-              ${
-                canAccessPortal("doctor-portal")
-                  ? `<button class="action-btn" data-view-appointment="${appointment.appointment_id}">View</button>`
-                  : ""
-              }
+              <button class="action-btn" data-view-appointment="${appointment.appointment_id}">View</button>
               <button class="action-btn" data-edit-appointment="${appointment.appointment_id}">Edit</button>
               <button class="action-btn danger" data-cancel-appointment="${appointment.appointment_id}">Cancel</button>
             </div>
@@ -731,11 +738,9 @@ function renderAppointmentsTable() {
     )
     .join("");
 
-  if (canAccessPortal("doctor-portal")) {
-    [...dom.appointmentsTableBody.querySelectorAll("[data-view-appointment]")].forEach((button) => {
-      button.addEventListener("click", () => openAppointmentInDoctorPanel(button.dataset.viewAppointment));
-    });
-  }
+  [...dom.appointmentsTableBody.querySelectorAll("[data-view-appointment]")].forEach((button) => {
+    button.addEventListener("click", () => renderAppointmentPreview(button.dataset.viewAppointment));
+  });
 
   [...dom.appointmentsTableBody.querySelectorAll("[data-edit-appointment]")].forEach((button) => {
     button.addEventListener("click", () => populateAppointmentForm(button.dataset.editAppointment));
@@ -744,6 +749,41 @@ function renderAppointmentsTable() {
   [...dom.appointmentsTableBody.querySelectorAll("[data-cancel-appointment]")].forEach((button) => {
     button.addEventListener("click", () => cancelAppointment(button.dataset.cancelAppointment));
   });
+}
+
+function renderAppointmentPreview(appointmentId) {
+  const appointment = state.appointments.find((entry) => String(entry.appointment_id) === String(appointmentId));
+
+  if (!appointment) {
+    resetAppointmentPreview();
+    showToast("Appointment details are not available.");
+    return;
+  }
+
+  dom.appointmentPreviewTitle.textContent = appointment.patients?.full_name ?? "Appointment details";
+  dom.appointmentPreviewGrid.innerHTML = [
+    ["Patient", appointment.patients?.full_name ?? "Unknown patient"],
+    ["Contact", appointment.patients?.contact_number ?? "-"],
+    ["Doctor", appointment.doctors?.name ?? "Unknown doctor"],
+    ["Specialization", appointment.doctors?.specialization ?? "-"],
+    ["Date", formatDate(appointment.appointment_date)],
+    ["Time", toDisplayTime(appointment.appointment_time)],
+    ["Type", appointment.type ?? "-"],
+    ["Status", capitalize(appointment.status)],
+    ["Notes", appointment.notes || "No booking note added."],
+  ]
+    .map(detailItemMarkup)
+    .join("");
+
+  dom.appointmentPreviewEmpty.classList.add("hidden");
+  dom.appointmentPreviewCard.classList.remove("hidden");
+}
+
+function resetAppointmentPreview() {
+  dom.appointmentPreviewTitle.textContent = "Appointment details";
+  dom.appointmentPreviewGrid.innerHTML = "";
+  dom.appointmentPreviewEmpty.classList.remove("hidden");
+  dom.appointmentPreviewCard.classList.add("hidden");
 }
 
 function populateAppointmentForm(appointmentId) {
@@ -829,6 +869,16 @@ function renderDoctorDashboard() {
     scheduledToday > 0 ? `${scheduledToday} scheduled cases pending today` : "No pending alerts";
 
   renderDoctorAppointments();
+}
+
+function jumpToDoctorSection(targetId) {
+  const target = document.getElementById(targetId);
+
+  if (!target || !canAccessPortal("doctor-portal")) {
+    return;
+  }
+
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderDoctorAppointments() {
